@@ -1,0 +1,38 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Set up Java 17 with Maven cache
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9  # v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@0efb1d1d84fc9633afcdaad14c485cbbc90ef46c  # v2
+
+      - name: Run Maven tests
+        run: ./mvnw test -B
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v1
+        with:
+          exit-code: "0"
+          scan-type: fs
+          vuln-type: os,library
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+          ignore-unfixed: true
