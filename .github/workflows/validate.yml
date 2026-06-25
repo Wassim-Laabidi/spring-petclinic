@@ -1,0 +1,39 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Run Maven tests
+        run: ./mvnw test -B
+
+      - name: Dependency Review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v2
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0.10.0
+        with:
+          exit-code: "0"
+          scan-type: fs
+          vuln-type: os,library
+          format: table
+          ignore-unfixed: true
