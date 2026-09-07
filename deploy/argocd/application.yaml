@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spring-petclinic
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-mode: auto
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Wassim-Laabidi/spring-petclinic.git
+    path: deploy/k8s
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: petclinic
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
